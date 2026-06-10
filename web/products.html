@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>المنتجات</title>
+    <link rel="stylesheet" href="/assets/app.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">بافكو | BAFCO</div>
+      <nav class="topnav">
+        <a href="/index.html" class="navlink" data-link>الرئيسية</a>
+        <a href="/products.html" class="navlink" data-link>منتجاتنا</a>
+        <div class="cart-wrapper">
+          <button class="navlink" id="btn-cart" title="السلة">
+            🛒 <span id="cart-count">0</span>
+          </button>
+        </div>
+        <a href="/login.html" class="navlink navlink-accent">دخول الموظفين</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="section">
+        <div class="section-header">
+          <div class="section-title">تصفح مجموعة منتجاتنا</div>
+        </div>
+
+        <div class="filters">
+          <input id="q" class="input" type="text" placeholder="ابحث عن حليب، عصير، أو أي منتج..." />
+          <select id="category-filter" class="select">
+            <option value="">جميع التصنيفات</option>
+          </select>
+          <select id="take" class="select">
+            <option value="12">12 منتج</option>
+            <option value="24" selected>24 منتج</option>
+            <option value="60">60 منتج</option>
+          </select>
+          <button class="btn btn-primary" id="btnSearch">بحث</button>
+          <button class="btn" id="btnClear">إعادة تعيين</button>
+        </div>
+
+        <div id="products-grid" class="grid"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="dev-info">
+        <div class="dev-name">تصميم وتطوير: المهندس هشام المجمر</div>
+        <div class="contact-links">
+          <a href="tel:773988932" class="contact-item">📞 773988932</a>
+          <a href="tel:779254189" class="contact-item">📞 779254189</a>
+        </div>
+      </div>
+      <div class="copyright">
+        &copy; 2026 جميع الحقوق محفوظة لمصنع بافكو للأغذية.
+      </div>
+    </footer>
+
+    <script src="/assets/app.js"></script>
+    <script>
+      window.addEventListener('DOMContentLoaded', async () => {
+        ui.updateCartBadge();
+        const el = document.getElementById('products-grid');
+        const qEl = document.getElementById('q');
+        const takeEl = document.getElementById('take');
+        const catFilter = document.getElementById('category-filter');
+
+        async function loadCategories() {
+          try {
+            const data = await api.getCategories();
+            data.items.forEach(cat => {
+              const opt = document.createElement('option');
+              opt.value = cat.id;
+              opt.textContent = cat.name;
+              catFilter.appendChild(opt);
+            });
+          } catch (err) {
+            console.error('Failed to load categories', err);
+          }
+        }
+
+        async function load() {
+          el.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px;">جاري التحميل...</div>';
+          try {
+            const data = await api.getProducts({ 
+              q: qEl.value, 
+              categoryId: catFilter.value,
+              take: Number(takeEl.value) 
+            });
+            if (data.items.length === 0) {
+              el.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px;">لا توجد نتائج.</div>';
+            } else {
+              el.innerHTML = data.items.map(renderProductCard).join('');
+            }
+          } catch (err) {
+            el.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--danger);">خطأ: ${err.message}</div>`;
+          }
+        }
+
+        document.getElementById('btnSearch').addEventListener('click', load);
+        document.getElementById('btnClear').addEventListener('click', () => {
+          qEl.value = '';
+          catFilter.value = '';
+          load();
+        });
+        qEl.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') load();
+        });
+        catFilter.addEventListener('change', load);
+        takeEl.addEventListener('change', load);
+
+        await loadCategories();
+        await load();
+      });
+    </script>
+  </body>
+</html>
+

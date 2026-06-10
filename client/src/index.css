@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-white text-gray-900;
+  }
+  html[dir='rtl'] body {
+    font-family: 'Noto Sans Arabic', Tahoma, sans-serif;
+  }
+  html[dir='ltr'] body {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .container-bafco {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  .gradient-primary {
+    @apply bg-gradient-to-r from-bafco-red to-bafco-red-dark;
+  }
+  .gradient-gold {
+    @apply bg-gradient-to-r from-bafco-gold to-bafco-gold-light;
+  }
+  .text-gradient {
+    @apply bg-gradient-to-r from-bafco-red to-bafco-gold bg-clip-text text-transparent;
+  }
+  .card {
+    @apply rounded-2xl bg-white shadow-lg transition-all duration-300 hover:shadow-xl;
+  }
+  .card-hover {
+    @apply transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-bafco-red px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:bg-bafco-red-dark focus:outline-none focus:ring-2 focus:ring-bafco-red focus:ring-offset-2 disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border-2 border-bafco-red bg-transparent px-6 py-3 text-sm font-semibold text-bafco-red transition-all duration-300 hover:bg-bafco-red hover:text-white focus:outline-none focus:ring-2 focus:ring-bafco-red focus:ring-offset-2;
+  }
+  .btn-gold {
+    @apply inline-flex items-center justify-center rounded-lg bg-bafco-gold px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:bg-bafco-gold-light focus:outline-none focus:ring-2 focus:ring-bafco-gold focus:ring-offset-2;
+  }
+  .section-title {
+    @apply text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl;
+  }
+  .section-subtitle {
+    @apply mt-4 text-lg leading-8 text-gray-600;
+  }
+  .input-field {
+    @apply block w-full rounded-lg border-gray-300 shadow-sm transition-all duration-200 focus:border-bafco-red focus:ring-2 focus:ring-bafco-red/20 focus:ring-offset-0;
+  }
+  .input-error {
+    @apply border-red-300 focus:border-red-500 focus:ring-red-500/20;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  .badge-red {
+    @apply badge bg-bafco-red/10 text-bafco-red;
+  }
+  .badge-gold {
+    @apply badge bg-bafco-gold/10 text-bafco-gold;
+  }
+  .badge-green {
+    @apply badge bg-bafco-green/10 text-bafco-green;
+  }
+  .badge-gray {
+    @apply badge bg-gray-100 text-gray-600;
+  }
+  .divider {
+    @apply border-t border-gray-100;
+  }
+  .glass {
+    @apply bg-white/80 backdrop-blur-xl;
+  }
+  .shadow-soft {
+    @apply shadow-lg shadow-black/5;
+  }
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+}

@@ -1,0 +1,300 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  phone        String?
+  address      String?
+  role         String   @default("CUSTOMER")
+
+  cart  Cart?
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role])
+  @@index([name])
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  nameAr   String
+  nameEn   String
+  slug     String    @unique
+  imageUrl String?
+  sortOrder Int     @default(0)
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  nameAr      String
+  nameEn      String
+  slug        String   @unique
+  descriptionAr String?
+  descriptionEn String?
+  shortDescAr   String?
+  shortDescEn   String?
+  price       Float    @default(0)
+  imageUrl    String?
+  sku         String?
+  barcode     String?
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  stockQuantity Int    @default(0)
+  unitSize    String?
+
+  // Nutrition
+  servingSize    String?
+  calories       Int?
+  totalFat       String?
+  saturatedFat   String?
+  transFat       String?
+  cholesterol    String?
+  sodium         String?
+  totalCarbs     String?
+  dietaryFiber   String?
+  sugars         String?
+  protein        String?
+  calcium        String?
+  iron           String?
+
+  // Allergens
+  allergenWarningAr String?
+  allergenWarningEn String?
+  ingredientsAr     String?
+  ingredientsEn     String?
+
+  categoryId  Int?
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, categoryId, price])
+  @@index([isFeatured])
+  @@index([sku])
+  @@index([createdAt])
+}
+
+model Job {
+  id          Int       @id @default(autoincrement())
+  titleAr     String
+  titleEn     String
+  slug        String    @unique
+  departmentAr String
+  departmentEn String
+  locationAr  String
+  locationEn  String
+  typeAr      String
+  typeEn      String
+  descriptionAr String?
+  descriptionEn String?
+  requirementsAr String?
+  requirementsEn String?
+  salaryMin   Float?
+  salaryMax   Float?
+  status      String @default("DRAFT")
+  expiresAt   DateTime?
+  sortOrder   Int       @default(0)
+
+  applications JobApplication[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, expiresAt])
+  @@index([departmentEn, typeEn])
+}
+
+model JobApplication {
+  id        Int      @id @default(autoincrement())
+  jobId     Int
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  fullNameAr  String
+  fullNameEn  String?
+  email       String
+  phone       String
+  coverLetter String?
+  cvUrl       String
+  portfolioUrl String?
+  linkedInUrl  String?
+
+  status  String @default("PENDING")
+  notes   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([jobId, status])
+  @@index([createdAt])
+}
+
+model ContactInquiry {
+  id          Int      @id @default(autoincrement())
+  type        String   @default("GENERAL")
+  fullName    String
+  email       String
+  phone       String?
+  company     String?
+  subject     String
+  message     String
+  isRead      Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isRead, createdAt])
+  @@index([type])
+}
+
+model B2BInquiry {
+  id          Int      @id @default(autoincrement())
+  companyName String
+  contactName String
+  email       String
+  phone       String
+  type        String
+  message     String
+  attachments String?
+
+  isRead      Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isRead, createdAt])
+  @@index([type])
+}
+
+model InvestorDocument {
+  id       Int    @id @default(autoincrement())
+  titleAr  String
+  titleEn  String
+  slug     String @unique
+  type     String
+  fileUrl  String
+  year     Int?
+  quarter  Int?
+  isPublished Boolean @default(false)
+  sortOrder   Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isPublished, type, year])
+  @@index([sortOrder])
+}
+
+model NewsArticle {
+  id          Int      @id @default(autoincrement())
+  titleAr     String
+  titleEn     String
+  slug        String   @unique
+  excerptAr   String?
+  excerptEn   String?
+  contentAr   String?
+  contentEn   String?
+  imageUrl    String?
+  category    String   @default("news")
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isPublished, category, publishedAt])
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  cartId    Int
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantity  Int      @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId])
+  @@index([cartId])
+  @@index([productId])
+}
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  userId    Int
+  user      User        @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items     OrderItem[]
+  status    String      @default("PENDING")
+  total     Float
+
+  shippingAddress String?
+  shippingCity    String?
+  shippingPhone   String?
+  shippingEmail   String?
+  deliveryFee     Float     @default(0)
+  notes           String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status, createdAt])
+  @@index([status, createdAt])
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantity  Int
+  price     Float
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model ContactInfo {
+  id        Int    @id @default(autoincrement())
+  key       String @unique
+  valueAr   String
+  valueEn   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>لوحة التحكم | بافكو</title>
+    <link rel="stylesheet" href="/assets/app.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand" id="dashboardTitle">لوحة التحكم | بافكو</div>
+      <nav class="topnav">
+        <a href="/index.html" class="navlink" data-link>الرئيسية</a>
+        <a href="/products.html" class="navlink" data-link>منتجاتنا</a>
+        <button class="navlink navlink-danger" id="btnLogout" type="button">تسجيل خروج</button>
+      </nav>
+    </header>
+
+    <main class="container">
+      <!-- Admin View -->
+      <div id="adminView" class="dashboard" style="display: none; grid-template-columns: 1fr 1fr; gap: 30px;">
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          <section class="panel">
+            <div class="panel-title">إضافة / تعديل منتج</div>
+            <form id="productForm" class="form" enctype="multipart/form-data">
+              <input type="hidden" id="id" />
+              <label class="label" for="name">اسم المنتج</label>
+              <input id="name" class="input" type="text" required placeholder="مثال: حليب السعودية" />
+              <label class="label" for="description">الوصف</label>
+              <textarea id="description" class="input" rows="3" required placeholder="وصف مختصر"></textarea>
+              <label class="label" for="price">السعر</label>
+              <input id="price" class="input" type="number" step="0.01" min="0" required placeholder="0" />
+              <label class="label" for="categoryId">التصنيف</label>
+              <select id="categoryId" class="select" style="width: 100%">
+                <option value="">اختر تصنيفاً</option>
+              </select>
+              <label class="label" for="image">صورة المنتج</label>
+              <input id="image" class="input" type="file" accept="image/*" />
+              <div class="row" style="margin-top: 15px; display: flex; gap: 10px;">
+                <button class="btn btn-primary" type="submit" id="btnSave">حفظ</button>
+                <button class="btn" type="button" id="btnReset">جديد</button>
+              </div>
+              <div id="msg" class="msg" role="status" style="margin-top: 10px; font-weight: bold; color: var(--primary);"></div>
+            </form>
+          </section>
+          <section class="panel">
+            <div class="panel-title">إدارة التصنيفات</div>
+            <div class="form">
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="catName" class="input" placeholder="اسم التصنيف الجديد" />
+                <button class="btn btn-primary" type="button" id="btnAddCat">إضافة</button>
+              </div>
+              <div id="catMsg" class="msg" style="margin-top: 10px;"></div>
+              <div id="catList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;"></div>
+            </div>
+          </section>
+        </div>
+        <section class="panel">
+          <div class="panel-title">قائمة المنتجات</div>
+          <div class="table-wrap">
+            <div class="list" id="items"></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Customer View -->
+      <div id="customerView" style="display: none;">
+        <div class="auth-card" style="max-width: 800px; margin: 40px auto;">
+          <h1 id="welcomeMsg">مرحباً بك</h1>
+          <div class="profile-info" style="margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="info-item">
+                <label class="label">الاسم</label>
+                <div id="profName" class="input" style="background: rgba(0,0,0,0.05); min-height: 40px; display: flex; align-items: center;"></div>
+            </div>
+            <div class="info-item">
+                <label class="label">البريد الإلكتروني</label>
+                <div id="profEmail" class="input" style="background: rgba(0,0,0,0.05); min-height: 40px; display: flex; align-items: center;"></div>
+            </div>
+            <div class="info-item">
+                <label class="label">رقم الهاتف</label>
+                <div id="profPhone" class="input" style="background: rgba(0,0,0,0.05); min-height: 40px; display: flex; align-items: center;"></div>
+            </div>
+            <div class="info-item">
+                <label class="label">نوع الحساب</label>
+                <div id="profRole" class="input" style="background: rgba(0,0,0,0.05); min-height: 40px; display: flex; align-items: center;">عميل مميز ✨</div>
+            </div>
+          </div>
+          
+          <div style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 20px;">
+            <h3>🛒 سلة التسوق الحالية</h3>
+            <div id="cartSummary" style="background: rgba(0,0,0,0.02); border-radius: 12px; padding: 20px; margin-top: 15px;">
+                <!-- سيتم عرض عناصر السلة هنا -->
+            </div>
+          </div>
+
+          <div style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 20px;">
+            <h3>📦 طلباتي الأخيرة</h3>
+            <div style="text-align: center; padding: 40px; opacity: 0.6;">
+                <p>لا توجد طلبات سابقة حتى الآن.</p>
+                <a href="/products.html" class="btn btn-primary" style="display: inline-block; margin-top: 15px; text-decoration: none;">ابدأ التسوق الآن</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="dev-info">
+        <div class="dev-name">تصميم وتطوير: المهندس هشام المجمر</div>
+        <div class="contact-links">
+          <a href="tel:773988932" class="contact-item">📞 773988932</a>
+          <a href="tel:779254189" class="contact-item">📞 779254189</a>
+        </div>
+      </div>
+      <div class="copyright">
+        &copy; 2026 جميع الحقوق محفوظة لمصنع بافكو للأغذية.
+      </div>
+    </footer>
+
+    <script src="/assets/app.js"></script>
+    <script>
+      window.addEventListener('DOMContentLoaded', async () => {
+        const token = api.getToken();
+        if (!token) {
+          window.location.href = '/login.html';
+          return;
+        }
+
+        let user = null;
+        try {
+            user = await api.getMe();
+            if (user.role === 'ADMIN') {
+                document.getElementById('adminView').style.display = 'grid';
+                document.getElementById('dashboardTitle').textContent = 'لوحة التحكم | الإدارة';
+                initAdmin();
+            } else {
+                document.getElementById('customerView').style.display = 'block';
+                document.getElementById('dashboardTitle').textContent = 'لوحة التحكم | حسابي';
+                initCustomer(user);
+            }
+        } catch (e) {
+            console.error('Auth error:', e);
+            api.clearToken();
+            window.location.href = '/login.html';
+            return;
+        }
+
+        document.getElementById('btnLogout').addEventListener('click', () => {
+          api.clearToken();
+          window.location.href = '/login.html';
+        });
+
+        // --- CUSTOMER LOGIC ---
+        function initCustomer(user) {
+            document.getElementById('welcomeMsg').textContent = `مرحباً بك، ${user.name || 'عميلنا العزيز'}`;
+            document.getElementById('profName').textContent = user.name || '-';
+            document.getElementById('profEmail').textContent = user.email;
+            document.getElementById('profPhone').textContent = user.phone || 'غير مسجل';
+            renderCartSummary();
+        }
+
+        function renderCartSummary() {
+            const summaryEl = document.getElementById('cartSummary');
+            const cart = ui.getCart();
+            
+            if (cart.length === 0) {
+                summaryEl.innerHTML = '<p style="text-align: center; opacity: 0.6;">السلة فارغة حالياً.</p>';
+                return;
+            }
+
+            const total = cart.reduce((sum, item) => sum + Number(item.price), 0);
+            
+            summaryEl.innerHTML = `
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    ${cart.map((item, idx) => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <img src="${item.imageUrl || 'https://via.placeholder.com/50'}" style="width: 40px; height: 40px; object-fit: contain; border-radius: 4px;" />
+                                <div>
+                                    <div style="font-weight: 800;">${escapeHtml(item.name)}</div>
+                                    <div style="font-size: 12px; opacity: 0.6;">${Number(item.price).toLocaleString()} ر.س</div>
+                                </div>
+                            </div>
+                            <button onclick="removeCartItem(${idx})" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 1.2rem;">&times;</button>
+                        </div>
+                    `).join('')}
+                    <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: 900; font-size: 1.2rem; border-top: 2px dashed var(--border); padding-top: 15px;">
+                        <div>الإجمالي:</div>
+                        <div style="color: var(--primary);">${total.toLocaleString()} ر.س</div>
+                    </div>
+                    <button class="btn btn-primary" style="margin-top: 10px; width: 100%;">إتمام الطلب (قيد التطوير)</button>
+                </div>
+            `;
+        }
+
+        window.removeCartItem = (idx) => {
+            const cart = ui.getCart();
+            cart.splice(idx, 1);
+            localStorage.setItem('ws_cart', JSON.stringify(cart));
+            ui.updateCartBadge();
+            renderCartSummary();
+        };
+
+        // --- ADMIN LOGIC ---
+        function initAdmin() {
+            const form = document.getElementById('productForm');
+            const msgEl = document.getElementById('msg');
+            const catMsgEl = document.getElementById('catMsg');
+            
+            loadAdminCategories();
+            loadAdminItems();
+
+            document.getElementById('btnReset').addEventListener('click', () => setAdminForm(null));
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                msgEl.textContent = 'جاري الحفظ...';
+
+                const id = document.getElementById('id').value;
+                const imageFile = document.getElementById('image').files?.[0];
+                const categoryId = document.getElementById('categoryId').value;
+
+                try {
+                    const productData = {
+                        name: document.getElementById('name').value,
+                        description: document.getElementById('description').value,
+                        price: Number(document.getElementById('price').value),
+                        categoryId: categoryId || null,
+                        imageFile
+                    };
+
+                    if (id) {
+                        await api.updateProduct({ id: Number(id), ...productData });
+                        msgEl.textContent = 'تم التحديث بنجاح';
+                    } else {
+                        await api.createProduct(productData);
+                        msgEl.textContent = 'تمت الإضافة بنجاح';
+                    }
+
+                    setAdminForm(null);
+                    await loadAdminItems();
+                } catch (err) {
+                    msgEl.textContent = err?.message || 'فشل العملية';
+                }
+            });
+
+            document.getElementById('btnAddCat').addEventListener('click', async () => {
+                const input = document.getElementById('catName');
+                const name = input.value.trim();
+                if (!name) return;
+                try {
+                    await api.createCategory(name);
+                    input.value = '';
+                    catMsgEl.textContent = 'تمت الإضافة';
+                    await loadAdminCategories();
+                } catch (err) {
+                    catMsgEl.textContent = err.message;
+                }
+            });
+        }
+
+        function setAdminForm(item) {
+          document.getElementById('id').value = item?.id || '';
+          document.getElementById('name').value = item?.name || '';
+          document.getElementById('description').value = item?.description || '';
+          document.getElementById('price').value = item?.price ?? '';
+          document.getElementById('categoryId').value = item?.categoryId || '';
+          document.getElementById('image').value = '';
+          document.getElementById('msg').textContent = '';
+        }
+
+        async function loadAdminCategories() {
+          try {
+            const data = await api.getCategories();
+            const select = document.getElementById('categoryId');
+            const list = document.getElementById('catList');
+            
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">اختر تصنيفاً</option>';
+            data.items.forEach(cat => {
+              const opt = document.createElement('option');
+              opt.value = cat.id;
+              opt.textContent = cat.name;
+              select.appendChild(opt);
+            });
+            select.value = currentVal;
+
+            list.innerHTML = data.items.map(cat => `
+              <div style="background: rgba(0,0,0,0.05); padding: 4px 12px; border-radius: 8px; border: 1px solid var(--border); display: flex; align-items: center; gap: 8px;">
+                <span>${escapeHtml(cat.name)}</span>
+                <button style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 18px;" type="button" data-del-cat="${cat.id}">&times;</button>
+              </div>
+            `).join('');
+
+            list.querySelectorAll('[data-del-cat]').forEach(b => {
+              b.addEventListener('click', async () => {
+                if (!confirm('هل تريد حذف هذا التصنيف؟')) return;
+                try {
+                  await api.deleteCategory(Number(b.getAttribute('data-del-cat')));
+                  await loadAdminCategories();
+                  await loadAdminItems();
+                } catch (err) {
+                  alert(err.message);
+                }
+              });
+            });
+          } catch (err) {
+            console.error('Load categories error:', err);
+          }
+        }
+
+        async function loadAdminItems() {
+          try {
+            const data = await api.getProducts({ take: 200 });
+            const itemsEl = document.getElementById('items');
+            itemsEl.innerHTML = data.items
+              .map((it) => `
+                <div class="list-item" style="padding: 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 15px;">
+                  <div class="thumb" style="width: 50px; height: 50px; flex-shrink: 0;">
+                    ${it.imageUrl ? `<img src="${it.imageUrl}" style="width: 100%; height: 100%; object-fit: contain;" />` : ''}
+                  </div>
+                  <div class="meta" style="flex-grow: 1;">
+                    <div class="name" style="font-weight: 800;">
+                      ${escapeHtml(it.name)} 
+                      ${it.category ? `<span style="font-size: 10px; opacity: 0.8; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; margin-right: 8px;">${escapeHtml(it.category.name)}</span>` : ''}
+                    </div>
+                    <div class="price" style="font-size: 14px; color: var(--primary); font-weight: bold;">${Number(it.price).toLocaleString()} ر.س</div>
+                  </div>
+                  <div class="actions" style="display: flex; gap: 8px;">
+                    <button class="btn btn-small" type="button" data-edit="${it.id}">تعديل</button>
+                    <button class="btn btn-small btn-danger" type="button" data-del="${it.id}">حذف</button>
+                  </div>
+                </div>
+              `)
+              .join('');
+
+            itemsEl.querySelectorAll('[data-edit]').forEach((b) => {
+              b.addEventListener('click', () => {
+                const id = Number(b.getAttribute('data-edit'));
+                const item = data.items.find((x) => x.id === id);
+                setAdminForm(item);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              });
+            });
+
+            itemsEl.querySelectorAll('[data-del]').forEach((b) => {
+              b.addEventListener('click', async () => {
+                const id = Number(b.getAttribute('data-del'));
+                if (!confirm('هل تريد حذف المنتج؟')) return;
+                await api.deleteProduct(id);
+                await loadAdminItems();
+              });
+            });
+          } catch (err) {
+            console.error('Load items error:', err);
+          }
+        }
+      });
+
+      function escapeHtml(str) {
+        return String(str)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
+    </script>
+  </body>
+</html>

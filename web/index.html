@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>المنتجات</title>
+    <link rel="stylesheet" href="/assets/app.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">بافكو | BAFCO</div>
+      <nav class="topnav">
+        <a href="/index.html" class="navlink" data-link>الرئيسية</a>
+        <a href="/products.html" class="navlink" data-link>منتجاتنا</a>
+        <div class="cart-wrapper">
+          <button class="navlink" id="btn-cart" title="السلة">
+            🛒 <span id="cart-count">0</span>
+          </button>
+        </div>
+        <a href="/login.html" class="navlink navlink-accent">دخول الموظفين</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <h1>جودة نثق بها من بافكو</h1>
+        <p>نقدم لك أجود منتجات "بافكو" من الألبان والمواد الغذائية التي ترافق عائلتك منذ أجيال.</p>
+      </section>
+
+      <section class="section">
+        <div class="filters">
+          <input type="text" id="search-input" class="input" placeholder="ابحث عن منتج من منتجات بافكو..." />
+          <select id="category-filter" class="select">
+            <option value="">جميع الفئات</option>
+          </select>
+          <button id="search-btn" class="btn btn-primary">بحث</button>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">✨ منتجاتنا المميزة</div>
+        </div>
+        <div id="products-grid" class="grid">
+          <!-- المنتجات ستظهر هنا -->
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="dev-info">
+        <div class="dev-name">تصميم وتطوير: المهندس هشام المجمر</div>
+        <div class="contact-links">
+          <a href="tel:773988932" class="contact-item">📞 773988932</a>
+          <a href="tel:779254189" class="contact-item">📞 779254189</a>
+        </div>
+      </div>
+      <div class="copyright">
+        &copy; 2026 جميع الحقوق محفوظة لمصنع بافكو للأغذية.
+      </div>
+    </footer>
+
+    <script src="/assets/app.js"></script>
+    <script>
+      async function loadProducts() {
+        const grid = document.getElementById('products-grid');
+        const q = document.getElementById('search-input').value;
+        const categoryId = document.getElementById('category-filter').value;
+        
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px;">جاري التحميل...</div>';
+        
+        try {
+          const data = await api.getProducts({ q, categoryId, take: 12 });
+          if (data.items.length === 0) {
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px;">لا توجد منتجات مطابقة للبحث.</div>';
+          } else {
+            grid.innerHTML = data.items.map(renderProductCard).join('');
+          }
+        } catch (err) {
+          grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--danger);">خطأ: ${err.message}</div>`;
+        }
+      }
+
+      async function loadCategories() {
+        const filter = document.getElementById('category-filter');
+        try {
+          const data = await api.getCategories();
+          data.items.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat.id;
+            opt.textContent = cat.name;
+            filter.appendChild(opt);
+          });
+        } catch (err) {
+          console.error('Failed to load categories', err);
+        }
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        ui.updateCartBadge();
+        loadCategories();
+        loadProducts();
+
+        document.getElementById('search-btn').addEventListener('click', loadProducts);
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') loadProducts();
+        });
+        document.getElementById('category-filter').addEventListener('change', loadProducts);
+      });
+    </script>
+  </body>
+</html>
+

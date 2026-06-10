@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>تسجيل الدخول</title>
+    <link rel="stylesheet" href="/assets/app.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">بافكو | BAFCO</div>
+      <nav class="topnav">
+        <a href="/index.html" class="navlink" data-link>الرئيسية</a>
+        <a href="/products.html" class="navlink" data-link>منتجاتنا</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <div class="auth-wrapper">
+        <div class="auth-card">
+          <h1>تسجيل الدخول</h1>
+          <div class="form">
+            <label class="label" for="email">البريد الإلكتروني</label>
+            <input id="email" class="input" type="email" placeholder="admin@bafco.com" />
+
+            <label class="label" for="password">كلمة المرور</label>
+            <input id="password" class="input" type="password" placeholder="••••••••" />
+
+            <button class="btn btn-primary" id="btnLogin" style="width: 100%; margin-top: 10px;">دخول</button>
+            <div id="msg" class="msg" style="text-align: center; margin-top: 15px;"></div>
+            <div style="text-align: center; margin-top: 20px;">
+                <span>ليس لديك حساب؟</span>
+                <a href="/register.html" style="color: var(--primary); text-decoration: none; font-weight: bold;">إنشاء حساب جديد</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="dev-info">
+        <div class="dev-name">تصميم وتطوير: المهندس هشام المجمر</div>
+        <div class="contact-links">
+          <a href="tel:773988932" class="contact-item">📞 773988932</a>
+          <a href="tel:779254189" class="contact-item">📞 779254189</a>
+        </div>
+      </div>
+      <div class="copyright">
+        &copy; 2026 جميع الحقوق محفوظة لمصنع بافكو للأغذية.
+      </div>
+    </footer>
+
+    <script src="/assets/app.js"></script>
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        const emailEl = document.getElementById('email');
+        const passEl = document.getElementById('password');
+        const msgEl = document.getElementById('msg');
+
+        document.getElementById('btnLogin').addEventListener('click', async () => {
+          msgEl.textContent = '';
+          try {
+            const data = await api.login({
+              email: emailEl.value.trim(),
+              password: passEl.value
+            });
+            api.setToken(data.token);
+            window.location.href = '/dashboard.html';
+          } catch (e) {
+            msgEl.textContent = e?.message || 'تعذر تسجيل الدخول';
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
+
