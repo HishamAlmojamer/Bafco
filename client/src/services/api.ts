@@ -36,12 +36,18 @@ http.interceptors.response.use(
   }
 );
 
-function handleError(err: unknown): never {
-  if (err instanceof AxiosError && err.response?.data?.error) {
-    throw new Error(err.response.data.error);
+function getErrorMessage(err: unknown): string {
+  if (err instanceof AxiosError && err.response?.data) {
+    const data = err.response.data as Record<string, unknown>;
+    if (typeof data.error === 'string') return data.error;
+    if (typeof data.message === 'string') return data.message;
   }
-  if (err instanceof Error) throw err;
-  throw new Error('An unexpected error occurred');
+  if (err instanceof Error) return err.message;
+  return 'An unexpected error occurred';
+}
+
+function handleError(err: unknown): never {
+  throw new Error(getErrorMessage(err));
 }
 
 // Auth
