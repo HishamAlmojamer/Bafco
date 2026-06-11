@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
 
     const passwordHash = await bcrypt.hash(password, 12);
     const result = await query(
-      'INSERT INTO "User" (email, password_hash, name, phone, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, name, phone, role',
+      'INSERT INTO "User" (email, "passwordHash", name, phone, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, name, phone, role',
       [email, passwordHash, name, phone || null, 'CUSTOMER']
     );
 
