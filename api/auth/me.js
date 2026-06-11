@@ -4,21 +4,15 @@ const { ok, fail, cors } = require('../_lib/response');
 
 module.exports = async (req, res) => {
   cors(res);
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 204;
-    res.end();
-    return;
-  }
-
-  if (req.method !== 'GET') {
-    fail(res, 'Method not allowed', 405);
-    return;
-  }
+  if (req.method === 'OPTIONS') return res.end();
+  if (req.method !== 'GET') { fail(res, 'Method not allowed', 405); return; }
 
   try {
     const user = extractUser(req);
-    if (!user) {
-      fail(res, 'Missing authentication token', 401);
+    if (!user) { fail(res, 'Missing authentication token', 401); return; }
+
+    if (!prisma) {
+      fail(res, 'System configuration error (database not available). Please contact the administrator.', 503);
       return;
     }
 
@@ -26,15 +20,10 @@ module.exports = async (req, res) => {
       where: { id: user.sub },
       select: { id: true, email: true, name: true, role: true, createdAt: true },
     });
-
-    if (!dbUser) {
-      fail(res, 'User not found', 401);
-      return;
-    }
+    if (!dbUser) { fail(res, 'User not found', 401); return; }
 
     ok(res, { user: dbUser });
   } catch (err) {
-    console.error('Me error:', err);
-    fail(res, 'Internal server error', 500);
+    fail(res, err.message, 500);
   }
 };

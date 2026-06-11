@@ -10,9 +10,7 @@ let prisma = globalForPrisma.__prisma;
 
 if (!prisma && PrismaClient) {
   try {
-    prisma = new PrismaClient({
-      log: ['error'],
-    });
+    prisma = new PrismaClient({ log: ['error'] });
     globalForPrisma.__prisma = prisma;
   } catch (e) {
     console.error('Failed to create PrismaClient:', e.message);

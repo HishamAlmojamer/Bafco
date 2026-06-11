@@ -1,7 +1,7 @@
 {
   "buildCommand": "cd client && npm install && npm run build",
   "outputDirectory": "client/dist",
-  "installCommand": "npm install && cd server && npm install && sed -i 's/provider = \"sqlite\"/provider = \"postgresql\"/' prisma/schema.prisma && cd .. && node server/node_modules/prisma/build/index.js generate --schema=server/prisma/schema.prisma",
+  "installCommand": "npm install && sed -i 's/provider = \"sqlite\"/provider = \"postgresql\"/' server/prisma/schema.prisma && node node_modules/prisma/build/index.js generate --schema=server/prisma/schema.prisma",
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
