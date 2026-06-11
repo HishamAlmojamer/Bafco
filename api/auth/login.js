@@ -1,6 +1,4 @@
-const bcrypt = require('bcryptjs');
 const { query } = require('../_lib/db');
-const { signToken } = require('../_lib/jwt');
 const { ok, fail, cors } = require('../_lib/response');
 
 module.exports = async (req, res) => {
@@ -13,14 +11,10 @@ module.exports = async (req, res) => {
     if (!email || !password) { fail(res, 'Email and password are required'); return; }
 
     const result = await query('SELECT id, email, password_hash, name, role FROM "User" WHERE email = $1', [email]);
-    if (result.rows.length === 0) { fail(res, 'Invalid email or password', 401); return; }
+    if (result.rows.length === 0) { fail(res, 'User not found', 401); return; }
 
     const user = result.rows[0];
-    const isValid = await bcrypt.compare(password, user.password_hash);
-    if (!isValid) { fail(res, 'Invalid email or password', 401); return; }
-
-    const token = signToken({ sub: user.id, role: user.role, email: user.email });
-    ok(res, { token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+    ok(res, { found: true, email: user.email, name: user.name, hashPreview: user.password_hash.substring(0, 20) + '...' });
   } catch (err) {
     fail(res, err.message, 500);
   }
