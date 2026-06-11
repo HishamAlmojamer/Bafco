@@ -1,7 +1,7 @@
 {
   "buildCommand": "cd client && npm install && npm run build",
   "outputDirectory": "client/dist",
-  "installCommand": "npm install && sed -i 's/provider = \"sqlite\"/provider = \"postgresql\"/' server/prisma/schema.prisma && node node_modules/prisma/build/index.js generate --schema=server/prisma/schema.prisma",
+  "installCommand": "npm install && sed -i 's/provider = \"sqlite\"/provider = \"postgresql\"/' server/prisma/schema.prisma && npx prisma generate --schema=server/prisma/schema.prisma",
   "env": {
     "DATABASE_URL": "postgresql://postgres.fmwyhehibaiexrltrbee:A@773988932@aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres",
     "JWT_SECRET": "bafco_production_jwt_secret_key_2026",

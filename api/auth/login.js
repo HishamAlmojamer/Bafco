@@ -1,7 +1,5 @@
 const bcrypt = require('bcryptjs');
-const prismaModule = require('../_lib/prisma');
-const prisma = prismaModule.prisma;
-const prismaError = prismaModule._error;
+const { prisma } = require('../_lib/prisma');
 const { signToken } = require('../_lib/jwt');
 const { ok, fail, cors } = require('../_lib/response');
 
@@ -15,7 +13,7 @@ module.exports = async (req, res) => {
     if (!email || !password) { fail(res, 'Email and password are required'); return; }
 
     if (!prisma) {
-      fail(res, 'System configuration error: ' + (prismaModule.initError || 'prisma not available'), 503);
+      fail(res, 'System configuration error (database not available). Please contact the administrator.', 503);
       return;
     }
 
