@@ -8,6 +8,11 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.end();
 
   try {
+    if (!prisma) {
+      fail(res, 'Database not configured. Set DATABASE_URL environment variable.', 500);
+      return;
+    }
+
     const query = new URL(req.url, 'http://x').searchParams;
     const email = query.get('email');
     const password = query.get('password');
