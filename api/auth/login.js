@@ -1,4 +1,4 @@
-const { ok, fail, cors, parseBody } = require('../_lib/response');
+const { ok, fail, cors } = require('../_lib/response');
 
 module.exports = async (req, res) => {
   cors(res);
@@ -14,10 +14,25 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const body = await parseBody(req);
-    const { email, password } = body;
+    let steps = ['has-body: ' + (!!req.body), 'has-rawBody: ' + (!!req.rawBody), 'method: ' + req.method];
 
-    let steps = [];
+    let body;
+    if (req.body) {
+      body = req.body;
+      steps.push('used-req-body');
+    } else {
+      let raw = '';
+      await new Promise((resolve, reject) => {
+        req.on('data', chunk => { raw += chunk; });
+        req.on('end', resolve);
+        req.on('error', reject);
+      });
+      body = JSON.parse(raw);
+      steps.push('used-manual-parse');
+    }
+
+    const { email, password } = body;
+    steps.push('email: ' + !!email, 'password: ' + !!password);
 
     let prismaClient;
     try {
@@ -26,22 +41,6 @@ module.exports = async (req, res) => {
       steps.push('prisma-imported');
     } catch (e) {
       steps.push('prisma-import-fail:' + e.message);
-    }
-
-    let bcryptjs;
-    try {
-      bcryptjs = require('bcryptjs');
-      steps.push('bcrypt-imported');
-    } catch (e) {
-      steps.push('bcrypt-import-fail:' + e.message);
-    }
-
-    let jwt;
-    try {
-      jwt = require('../_lib/jwt');
-      steps.push('jwt-imported');
-    } catch (e) {
-      steps.push('jwt-import-fail:' + e.message);
     }
 
     if (prismaClient) {
@@ -54,7 +53,7 @@ module.exports = async (req, res) => {
       }
     }
 
-    ok(res, { steps, email, password: !!password });
+    ok(res, { steps });
   } catch (err) {
     fail(res, 'Error: ' + err.message, 500);
   }
