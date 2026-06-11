@@ -14,43 +14,27 @@ module.exports = async (req, res) => {
   }
 
   try {
-    let steps = ['has-body: ' + (!!req.body), 'has-rawBody: ' + (!!req.rawBody), 'method: ' + req.method];
+    let steps = [];
+    steps.push('body=' + typeof req.body);
+    steps.push('rawBody=' + typeof req.rawBody);
+    steps.push('headers-ct=' + req.headers['content-type']);
+    steps.push('readable=' + req.readable);
+    steps.push('destroyed=' + req.destroyed);
+    steps.push('method=' + req.method);
+
+    let buf = Buffer.alloc(0);
+    for await (const chunk of req) {
+      buf = Buffer.concat([buf, chunk]);
+    }
+    const raw = buf.toString('utf8');
+    steps.push('raw-len=' + raw.length + ' raw=' + raw.substring(0, 100));
 
     let body;
-    if (req.body) {
-      body = req.body;
-      steps.push('used-req-body');
-    } else {
-      let raw = '';
-      await new Promise((resolve, reject) => {
-        req.on('data', chunk => { raw += chunk; });
-        req.on('end', resolve);
-        req.on('error', reject);
-      });
-      body = JSON.parse(raw);
-      steps.push('used-manual-parse');
-    }
-
-    const { email, password } = body;
-    steps.push('email: ' + !!email, 'password: ' + !!password);
-
-    let prismaClient;
     try {
-      const p = require('../_lib/prisma');
-      prismaClient = p.prisma;
-      steps.push('prisma-imported');
+      body = JSON.parse(raw);
+      steps.push('parsed=ok');
     } catch (e) {
-      steps.push('prisma-import-fail:' + e.message);
-    }
-
-    if (prismaClient) {
-      try {
-        await prismaClient.$connect();
-        steps.push('prisma-connected');
-        await prismaClient.$disconnect();
-      } catch (e) {
-        steps.push('prisma-connect-fail:' + e.message);
-      }
+      steps.push('parse-error=' + e.message);
     }
 
     ok(res, { steps });
