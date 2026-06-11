@@ -1,4 +1,4 @@
-const { ok, fail, cors } = require('../_lib/response');
+const { ok, fail, cors, parseBody } = require('../_lib/response');
 
 module.exports = async (req, res) => {
   cors(res);
@@ -13,5 +13,20 @@ module.exports = async (req, res) => {
     return;
   }
 
-  ok(res, { message: 'login endpoint works', method: req.method });
+  try {
+    let prismaOk = false;
+    let prismaError = null;
+    try {
+      const { prisma } = require('../_lib/prisma');
+      await prisma.$connect();
+      prismaOk = true;
+      await prisma.$disconnect();
+    } catch (e) {
+      prismaError = e.message;
+    }
+
+    ok(res, { prismaOk, prismaError, message: 'login test' });
+  } catch (err) {
+    fail(res, 'Error: ' + err.message, 500);
+  }
 };
