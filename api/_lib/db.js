@@ -20,15 +20,10 @@ async function query(text, params) {
   if (!p) throw new Error('DATABASE_URL not configured');
   const client = await p.connect();
   try {
-    const result = await client.query(text, params);
-    return result;
+    return await client.query(text, params);
   } finally {
     client.release();
   }
 }
 
-function close() {
-  if (pool) { pool.end(); pool = null; }
-}
-
-module.exports = { query, close, getPool };
+module.exports = { query };
