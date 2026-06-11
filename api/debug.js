@@ -10,18 +10,23 @@ module.exports = (req, res) => {
     info.cwd = process.cwd();
     info.nodeVersion = process.version;
 
-    info.prismaClientPath = require.resolve('@prisma/client');
-    info.prismaClientDir = path.dirname(require.resolve('@prisma/client'));
+    const prismaClientDir = path.dirname(require.resolve('@prisma/client'));
+    info.prismaClientDir = prismaClientDir;
 
-    const dotPrismaDir = path.join(info.prismaClientDir, '..', '.prisma', 'client');
-    info.dotPrismaClientExists = fs.existsSync(dotPrismaDir);
-    if (info.dotPrismaClientExists) {
-      info.dotPrismaFiles = fs.readdirSync(dotPrismaDir);
-    }
+    const paths = {};
+    paths.oneLevelUp = path.join(prismaClientDir, '..', '.prisma', 'client');
+    paths.twoLevelsUp = path.join(prismaClientDir, '..', '..', '.prisma', 'client');
+    paths.prismaModuleDotPrisma = path.join(prismaClientDir, '..', '.prisma');
+    paths.rootNodeModulesDotPrisma = path.join(prismaClientDir, '..', '..', '.prisma');
 
-    info.prismaModuleDir = path.join(info.prismaClientDir, '..', '.prisma');
-    if (fs.existsSync(info.prismaModuleDir)) {
-      info.prismaModuleContents = fs.readdirSync(info.prismaModuleDir);
+    for (const [key, p] of Object.entries(paths)) {
+      info[key] = {
+        path: p,
+        exists: fs.existsSync(p),
+      };
+      if (fs.existsSync(p)) {
+        try { info[key].contents = fs.readdirSync(p); } catch (e) { info[key].contents = e.message; }
+      }
     }
 
     info.rootNodeModules = fs.readdirSync(path.join(process.cwd(), 'node_modules')).filter(f => f.startsWith('.') || f.startsWith('@'));
