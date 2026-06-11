@@ -1,4 +1,4 @@
-const { prisma } = require('../_lib/prisma');
+const { query } = require('../_lib/db');
 const { extractUser } = require('../_lib/jwt');
 const { ok, fail, cors } = require('../_lib/response');
 
@@ -8,21 +8,13 @@ module.exports = async (req, res) => {
   if (req.method !== 'GET') { fail(res, 'Method not allowed', 405); return; }
 
   try {
-    const user = extractUser(req);
-    if (!user) { fail(res, 'Missing authentication token', 401); return; }
+    const userData = extractUser(req);
+    if (!userData) { fail(res, 'Unauthorized', 401); return; }
 
-    if (!prisma) {
-      fail(res, 'System configuration error: ' + (require('../_lib/prisma').initError || 'prisma not available'), 503);
-      return;
-    }
+    const result = await query('SELECT id, email, name, phone, role, address FROM "User" WHERE id = $1', [userData.sub]);
+    if (result.rows.length === 0) { fail(res, 'User not found', 404); return; }
 
-    const dbUser = await prisma.user.findUnique({
-      where: { id: user.sub },
-      select: { id: true, email: true, name: true, role: true, createdAt: true },
-    });
-    if (!dbUser) { fail(res, 'User not found', 401); return; }
-
-    ok(res, { user: dbUser });
+    ok(res, { user: result.rows[0] });
   } catch (err) {
     fail(res, err.message, 500);
   }

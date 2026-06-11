@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const { prisma } = require('../_lib/prisma');
+const { query } = require('../_lib/db');
 const { signToken } = require('../_lib/jwt');
 const { ok, fail, cors } = require('../_lib/response');
 
@@ -12,19 +12,16 @@ module.exports = async (req, res) => {
     const { email, password, name, phone } = req.body || {};
     if (!email || !password || !name) { fail(res, 'Email, password, and name are required'); return; }
 
-    if (!prisma) {
-      fail(res, 'System configuration error: ' + (require('../_lib/prisma').initError || 'prisma not available'), 503);
-      return;
-    }
-
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) { fail(res, 'Email already registered', 409); return; }
+    const existing = await query('SELECT id FROM "User" WHERE email = $1', [email]);
+    if (existing.rows.length > 0) { fail(res, 'Email already registered', 409); return; }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    const user = await prisma.user.create({
-      data: { email, passwordHash, name, phone: phone || null, role: 'CUSTOMER' },
-    });
+    const result = await query(
+      'INSERT INTO "User" (email, password_hash, name, phone, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, name, phone, role',
+      [email, passwordHash, name, phone || null, 'CUSTOMER']
+    );
 
+    const user = result.rows[0];
     const token = signToken({ sub: user.id, role: user.role, email: user.email });
     ok(res, { token, user: { id: user.id, email: user.email, name: user.name, phone: user.phone, role: user.role } }, 201);
   } catch (err) {
