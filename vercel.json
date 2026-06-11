@@ -4,11 +4,5 @@
   "installCommand": "npm install && cd server && npm install && npx tsc && sed -i 's/provider = \"sqlite\"/provider = \"postgresql\"/' prisma/schema.prisma && npx prisma generate",
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
-  ],
-  "functions": {
-    "api/index.js": {
-      "memory": 256,
-      "maxDuration": 30
-    }
-  }
+  ]
 }
