@@ -1,6 +1,3 @@
-const bcrypt = require('bcryptjs');
-const { prisma } = require('../_lib/prisma');
-const { signToken } = require('../_lib/jwt');
 const { ok, fail, cors, parseBody } = require('../_lib/response');
 
 module.exports = async (req, res) => {
@@ -20,31 +17,45 @@ module.exports = async (req, res) => {
     const body = await parseBody(req);
     const { email, password } = body;
 
-    if (!email || !password) {
-      fail(res, 'Email and password are required');
-      return;
+    let steps = [];
+
+    let prismaClient;
+    try {
+      const p = require('../_lib/prisma');
+      prismaClient = p.prisma;
+      steps.push('prisma-imported');
+    } catch (e) {
+      steps.push('prisma-import-fail:' + e.message);
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      fail(res, 'Invalid email or password', 401);
-      return;
+    let bcryptjs;
+    try {
+      bcryptjs = require('bcryptjs');
+      steps.push('bcrypt-imported');
+    } catch (e) {
+      steps.push('bcrypt-import-fail:' + e.message);
     }
 
-    const isValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isValid) {
-      fail(res, 'Invalid email or password', 401);
-      return;
+    let jwt;
+    try {
+      jwt = require('../_lib/jwt');
+      steps.push('jwt-imported');
+    } catch (e) {
+      steps.push('jwt-import-fail:' + e.message);
     }
 
-    const token = signToken({ sub: user.id, role: user.role, email: user.email });
+    if (prismaClient) {
+      try {
+        await prismaClient.$connect();
+        steps.push('prisma-connected');
+        await prismaClient.$disconnect();
+      } catch (e) {
+        steps.push('prisma-connect-fail:' + e.message);
+      }
+    }
 
-    ok(res, {
-      token,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
-    });
+    ok(res, { steps, email, password: !!password });
   } catch (err) {
-    console.error('Login error:', err);
-    fail(res, err.message || 'Internal server error', 500);
+    fail(res, 'Error: ' + err.message, 500);
   }
 };
