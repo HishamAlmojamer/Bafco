@@ -1,44 +1,41 @@
+const { prisma } = require('../_lib/prisma');
+const bcrypt = require('bcryptjs');
+const { signToken } = require('../_lib/jwt');
 const { ok, fail, cors } = require('../_lib/response');
 
 module.exports = async (req, res) => {
   cors(res);
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 204;
-    res.end();
-    return;
-  }
-
-  if (req.method !== 'POST') {
-    fail(res, 'Method not allowed', 405);
-    return;
-  }
+  if (req.method === 'OPTIONS') return res.end();
 
   try {
-    let steps = [];
-    steps.push('body=' + typeof req.body);
-    steps.push('rawBody=' + typeof req.rawBody);
-    steps.push('headers-ct=' + req.headers['content-type']);
-    steps.push('readable=' + req.readable);
-    steps.push('destroyed=' + req.destroyed);
-    steps.push('method=' + req.method);
+    const query = new URL(req.url, 'http://x').searchParams;
+    const email = query.get('email');
+    const password = query.get('password');
 
-    let buf = Buffer.alloc(0);
-    for await (const chunk of req) {
-      buf = Buffer.concat([buf, chunk]);
-    }
-    const raw = buf.toString('utf8');
-    steps.push('raw-len=' + raw.length + ' raw=' + raw.substring(0, 100));
-
-    let body;
-    try {
-      body = JSON.parse(raw);
-      steps.push('parsed=ok');
-    } catch (e) {
-      steps.push('parse-error=' + e.message);
+    if (!email || !password) {
+      fail(res, 'Email and password required as query params');
+      return;
     }
 
-    ok(res, { steps });
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      fail(res, 'Invalid email or password', 401);
+      return;
+    }
+
+    const isValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isValid) {
+      fail(res, 'Invalid email or password', 401);
+      return;
+    }
+
+    const token = signToken({ sub: user.id, role: user.role, email: user.email });
+
+    ok(res, {
+      token,
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+    });
   } catch (err) {
-    fail(res, 'Error: ' + err.message, 500);
+    fail(res, err.message, 500);
   }
 };
