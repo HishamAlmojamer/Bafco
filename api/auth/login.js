@@ -1,5 +1,10 @@
+const { ok, fail, cors } = require('../_lib/response');
+
 module.exports = (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
+  cors(res);
+  if (req.method === 'OPTIONS') return res.end();
+  if (req.method !== 'POST') { fail(res, 'Method not allowed', 405); return; }
+
   try {
     res.statusCode = 200;
     res.end(JSON.stringify({
@@ -7,10 +12,7 @@ module.exports = (req, res) => {
       hasBody: !!req.body,
       bodyType: typeof req.body,
       keys: req.body ? Object.keys(req.body) : [],
-      env: {
-        databaseUrl: process.env.DATABASE_URL ? 'set (' + process.env.DATABASE_URL.length + ' chars)' : 'MISSING',
-        nodeEnv: process.env.NODE_ENV,
-      },
+      email: req.body?.email || null,
     }));
   } catch (err) {
     res.statusCode = 500;
