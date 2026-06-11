@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
     if (!email || !password || !name) { fail(res, 'Email, password, and name are required'); return; }
 
     if (!prisma) {
-      fail(res, 'System configuration error (database not available). Please contact the administrator.', 503);
+      fail(res, 'System configuration error: ' + (require('../_lib/prisma').initError || 'prisma not available'), 503);
       return;
     }
 

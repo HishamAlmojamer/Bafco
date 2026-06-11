@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
     if (!user) { fail(res, 'Missing authentication token', 401); return; }
 
     if (!prisma) {
-      fail(res, 'System configuration error (database not available). Please contact the administrator.', 503);
+      fail(res, 'System configuration error: ' + (require('../_lib/prisma').initError || 'prisma not available'), 503);
       return;
     }
 
